@@ -59,6 +59,9 @@ class ResponsiveDrawerLayoutState extends State<ResponsiveDrawerLayout>
     value: 0.0,
   );
 
+  // Track drawer state for tablet mode (starts closed like mobile)
+  bool _tabletDrawerOpen = false;
+
   bool _isTablet(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return size.shortestSide >= 600;
@@ -73,7 +76,7 @@ class ResponsiveDrawerLayoutState extends State<ResponsiveDrawerLayout>
   double get _edgeWidth =>
       MediaQuery.of(context).size.width * widget.edgeFraction;
 
-  bool get isOpen => _controller.value == 1.0;
+  bool get isOpen => _isTablet(context) ? _tabletDrawerOpen : _controller.value == 1.0;
 
   Future<void> _animateTo(
     double target, {
@@ -99,8 +102,10 @@ class ResponsiveDrawerLayoutState extends State<ResponsiveDrawerLayout>
   }
 
   void open({double velocity = 0.0}) {
-    // Only animate on mobile; on tablet, drawer is always visible
-    if (_isTablet(context)) return;
+    if (_isTablet(context)) {
+      setState(() => _tabletDrawerOpen = true);
+      return;
+    }
 
     try {
       widget.onOpenStart?.call();
@@ -110,15 +115,19 @@ class ResponsiveDrawerLayoutState extends State<ResponsiveDrawerLayout>
   }
 
   void close({double velocity = 0.0}) {
-    // Only animate on mobile; on tablet, drawer is always visible
-    if (_isTablet(context)) return;
+    if (_isTablet(context)) {
+      setState(() => _tabletDrawerOpen = false);
+      return;
+    }
 
     _animateTo(0.0, velocity: velocity, easeOut: true);
   }
 
   void toggle() {
-    // Only toggle on mobile; on tablet, drawer is always visible
-    if (_isTablet(context)) return;
+    if (_isTablet(context)) {
+      setState(() => _tabletDrawerOpen = !_tabletDrawerOpen);
+      return;
+    }
 
     isOpen ? close() : open();
   }
@@ -191,16 +200,23 @@ class ResponsiveDrawerLayoutState extends State<ResponsiveDrawerLayout>
   Widget _buildTabletLayout(ConduitThemeExtension theme) {
     return Row(
       children: [
-        // Persistent drawer
-        Container(
-          width: widget.tabletDrawerWidth,
-          decoration: BoxDecoration(
-            color: theme.surfaceBackground,
-            border: Border(
-              right: BorderSide(color: theme.dividerColor, width: 1),
-            ),
-          ),
-          child: widget.drawer,
+        // Collapsible drawer with animation
+        AnimatedContainer(
+          duration: widget.duration,
+          curve: widget.curve,
+          width: _tabletDrawerOpen ? widget.tabletDrawerWidth : 0,
+          child: _tabletDrawerOpen
+              ? Container(
+                  width: widget.tabletDrawerWidth,
+                  decoration: BoxDecoration(
+                    color: theme.surfaceBackground,
+                    border: Border(
+                      right: BorderSide(color: theme.dividerColor, width: 1),
+                    ),
+                  ),
+                  child: widget.drawer,
+                )
+              : const SizedBox.shrink(),
         ),
         // Content
         Expanded(child: widget.child),
