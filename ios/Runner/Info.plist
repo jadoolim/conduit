@@ -12,7 +12,7 @@
 			<string>it</string>
 		</array>
 		<key>CFBundleDisplayName</key>
-		<string>Conduit</string>
+		<string>전북도청 AI</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
