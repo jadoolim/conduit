@@ -23,7 +23,7 @@
     </queries>
 
     <application
-        android:label="Conduit"
+        android:label="전북도청 AI"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
